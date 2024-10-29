@@ -260,15 +260,19 @@ class teleBot:
         try:
             attachments = []
             image = self.session.get(image[0][3], stream=True)
+            print("imagePass")
             photo = self.upload.photo_wall(photos=image.raw)[0]
+            print("PhotoPass")
             attachments.append(f"photo{photo['owner_id']}_{photo['id']}")
+            print("Attachments pass")
             self.vk.wall.post(owner_id=-195726793, from_group=1, attachment=','.join(attachments), publish_date=unix, message=message, copyright = image[0][4])
+            print("Post Pass")
             cursorr.execute(f"UPDATE year{datetime.datetime.now().year}_month{self.monthly}_day{self.day} SET danbooruID = ? WHERE hour = ?", (self.dbID, hour))
             self.teleBot.answer_callback_query(call_id, "Пост успешно отложен.")
             print(image)
         except Exception as e:
             self.teleBot.answer_callback_query(call_id, "Не удалось отложить пост.")
-            print(e)
+            print(f"{e}")
         cord.commit()
         cord.close()
 
