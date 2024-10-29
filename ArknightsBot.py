@@ -268,6 +268,7 @@ class teleBot:
             print(image)
         except Exception as e:
             self.teleBot.answer_callback_query(call_id, "Не удалось отложить пост.")
+            print(e)
         cord.commit()
         cord.close()
 
