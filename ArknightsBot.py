@@ -175,7 +175,7 @@ class teleBot:
             cursord = cond.cursor()
 
             for z in dates:
-                dt = datetime.datetime.fromisoformat(f"{year}-{month}-{z} 00:00:00")
+                dt = datetime.datetime.fromisoformat(f"{year}-{month}-{z} 07:00:00")
                 print(dt)
                 d = dt.timestamp()
                 cursord.execute(f"INSERT INTO year{year}_month{month} (day, unixDay) VALUES (?, ?)", (z, d))
