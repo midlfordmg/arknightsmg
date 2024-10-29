@@ -100,7 +100,6 @@ class teleBot:
             source_url, danbooruID, artist = _img['source'], _img['id'], _img['tag_string_artist']
             characters = self.format_characters(_img['tag_string_character'])
             print("tag konstrukt pass")
-            self.save_image_data(danbooruID, characters, artist, file_url, source_url)
             message = characters + "#Arknights" + "\n\n" + f"by {artist}"
             print(file_url)
             # if file_url[-3:] == "png":
@@ -113,11 +112,13 @@ class teleBot:
                 print("Это очень большое изображение.")
                 try:
                     self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message, reply_markup=self.gen_markup(danbooruID))
+                    self.save_image_data(danbooruID, characters, artist, _img['large_file_url'], source_url)
                 except Exception as e:
                     print(f"{e}")
             else:
                 try:
                     self.teleBot.send_photo(self.chat, file_url, caption = message, reply_markup=self.gen_markup(danbooruID))
+                    self.save_image_data(danbooruID, characters, artist, file_url, source_url)
                 except Exception as e:
                     print(f"{e}")
             return
