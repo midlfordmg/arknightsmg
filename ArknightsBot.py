@@ -1,8 +1,8 @@
 from ast import Pass
+from zoneinfo import ZoneInfo
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from vk_api import VkUpload
-from vk_api.longpoll import VkLongPoll, VkEventType
 import calendar
 import datetime
 import time
@@ -12,12 +12,11 @@ import vk_api
 import threading
 import sqlite3
 
-vk_session = vk_api.VkApi(token="vk1.a.nZKSQyWqg4KLp9TL5chEL2AhhLDB63Ds96u3hS6801QojhSuj_Ckep-0utW2MAjmRkDXLUY_dihKxmOLOCbbSz1HlRMhqs2Fn9Mn5Bfp3fjmiBeHmsX04tKUwEI2tQaRceobNtHeLC911yoBrJU-3GpP8WkjJ2q_gBw-72_LQVTyQboiwYyUUqPJa_wKrcd_Boe-5pIcZ3Jya-ZEWOj-Bg")
+vk_session = vk_api.VkApi(token="vk1.a.F-uilw10Dj0LbR_C6inBDnob8qmkxFuUhwj6YDgaalret1TJMFO7cfpvr0c5p-ul_HuHbSebHRvMcbriflOdqwaQ5u5Wqx467bRJaqzS7jUIf9N13VAsVIZMwIrJv-cshjc8lcaGV4zA71_DdCYBHodHIY6RAx8LocNFvsqrEFiIcHgcMzQLRvvgDV0F2TByjYFSiDn65RapW6-gHuzNmw")
 danbooruClient = Danbooru("danbooru", username="NVKalashnikov", api_key="1nafoWw9jkWrJrNZpF6F1v2B")
 session = requests.Session()
 upload = VkUpload(vk_session)
 vk = vk_session.get_api()
-longpoll = VkLongPoll(vk_session)
 
 def init_db():
     with sqlite3.connect('images.db') as conn:
@@ -26,9 +25,7 @@ def init_db():
             CREATE TABLE IF NOT EXISTS Images (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 DanbooruID INTEGER,
-                Parody TEXT DEFAULT '#Arknights',
-                Characters TEXT,
-                Artist TEXT,
+                post_text TEXT,
                 file_url TEXT,
                 source_url TEXT
             )
@@ -44,13 +41,12 @@ onProcessing = 0
 
 
 class teleBot:
-    def __init__(self, teleClient, danbooruClient, session, vk, upload, longpoll, chat_id):
+    def __init__(self, teleClient, danbooruClient, session, vk, upload, chat_id):
         self.danbooru = danbooruClient
         self.teleBot = teleClient
         self.vk = vk
         self.session = session
         self.upload = upload
-        self.longpoll = longpoll
         self.lastid = 0
         self.animage_id = 0
         self.chat = chat_id
@@ -111,14 +107,14 @@ class teleBot:
             if _img['file_size'] > 5000000:
                 print("Это очень большое изображение.")
                 try:
-                    self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message, reply_markup=self.gen_markup(danbooruID))
-                    self.save_image_data(danbooruID, characters, artist, _img['large_file_url'], source_url)
+                    self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message + "\n\n" + source_url, reply_markup=self.gen_markup(danbooruID))
+                    self.save_image_data(danbooruID, message, _img['large_file_url'], source_url)
                 except Exception as e:
                     print(f"{e}")
             else:
                 try:
-                    self.teleBot.send_photo(self.chat, file_url, caption = message, reply_markup=self.gen_markup(danbooruID))
-                    self.save_image_data(danbooruID, characters, artist, file_url, source_url)
+                    self.teleBot.send_photo(self.chat, file_url, caption = message + "\n\n" + source_url, reply_markup=self.gen_markup(danbooruID))
+                    self.save_image_data(danbooruID, message, file_url, source_url)
                 except Exception as e:
                     print(f"{e}")
             return
@@ -128,13 +124,13 @@ class teleBot:
         return "\n".join(f"#{tag.replace('_(arknights)', '')}@arknightsmg " for tag in tag_string.split())
 
 
-    def save_image_data(self, danbooruID, characters, artist, file_url, source_url):
+    def save_image_data(self, danbooruID, post_text, file_url, source_url):
         with sqlite3.connect('images.db') as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO Images (DanbooruID, Characters, Artist, file_url, source_url)
-                VALUES (?, ?, ?, ?, ?)
-            """, (danbooruID, characters, artist, file_url, source_url))
+                INSERT INTO Images (DanbooruID, post_text, file_url, source_url)
+                VALUES (?, ?, ?, ?)
+            """, (danbooruID, post_text, file_url, source_url))
 
 
     def start(self):
@@ -149,46 +145,47 @@ class teleBot:
     def calendar(self):
         now = datetime.datetime.now()
         year = now.year
-        month = now.month
-        cond = sqlite3.connect('images.db')
-        cursord = cond.cursor()
-        cursord.execute(f"""CREATE TABLE IF NOT EXISTS year{year}_month{month}(
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        day INTEGER,
-                        unixDay INTEGER)""")
-
-        cursord.execute(f'SELECT day FROM year{year}_month{month} WHERE day=?', (10,))
-        ali = cursord.fetchall()
-        cond.close()
-        if not ali:
-            my_calendar = calendar.monthcalendar(year, month)
-            dates = []
-            for i in my_calendar:
-                for q in i:
-                    if q != 0:
-                        if len(str(q)) == 1:
-                            q = str(f"0{q}")
-                            dates.append(q)
-                        else:
-                            dates.append(str(q))
+        for month in range(1, 13):
+            print(month)
             cond = sqlite3.connect('images.db')
             cursord = cond.cursor()
-
-            for z in dates:
-                dt = datetime.datetime.fromisoformat(f"{year}-{month}-{z} 00:00:00")
-                print(dt)
-                d = dt.timestamp()
-                cursord.execute(f"INSERT INTO year{year}_month{month} (day, unixDay) VALUES (?, ?)", (z, d))
-                cursord.execute(f"""CREATE TABLE IF NOT EXISTS  year{year}_month{month}_day{z} (
-                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                             hour INTEGER,
-                             unixHour INTEGER,
-                             danbooruID INTEGER)""")
-                for b in range(0, 24):
-                    cond.execute(f"INSERT INTO year{year}_month{month}_day{z} (hour, unixHour) VALUES (?, ?)", (b, d))
-                    d += 3600
-            cond.commit()  
+            cursord.execute(f"""CREATE TABLE IF NOT EXISTS year{year}_month{month}(
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            day INTEGER,
+                            unixDay INTEGER)""")
+            cursord.execute(f'SELECT day FROM year{year}_month{month} WHERE day=?', (10,))
+            ali = cursord.fetchall()
             cond.close()
+            if not ali:
+                my_calendar = calendar.monthcalendar(year, month)
+                dates = []
+                for i in my_calendar:
+                    for q in i:
+                        if q != 0:
+                            if len(str(q)) == 1:
+                                q = str(f"0{q}")
+                                dates.append(q)
+                            else:
+                                dates.append(str(q))
+                cond = sqlite3.connect('images.db')
+                cursord = cond.cursor()
+
+                for z in dates:
+                    dtz = datetime.datetime.fromisoformat(f"{year}-{f'0{month}' if len(str(month)) == 1 else month}-{z} 00:00:00")
+                    print(dtz)
+                    dt = dtz.replace(tzinfo=ZoneInfo("Europe/Moscow"))
+                    d = dt.timestamp()
+                    cursord.execute(f"INSERT INTO year{year}_month{month} (day, unixDay) VALUES (?, ?)", (z, d))
+                    cursord.execute(f"""CREATE TABLE IF NOT EXISTS  year{year}_month{month}_day{z} (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                hour INTEGER,
+                                unixHour INTEGER,
+                                danbooruID INTEGER)""")
+                    for b in range(0, 24):
+                        cond.execute(f"INSERT INTO year{year}_month{month}_day{z} (hour, unixHour) VALUES (?, ?)", (b, d))
+                        d += 3600
+                cond.commit()  
+                cond.close()
 
 
     def gen_markup_edit(self, danbooruID):
@@ -248,36 +245,39 @@ class teleBot:
         return markup
 
 
-    def vk_posting(self, hour, call_id):
+    def vk_posting(self, hour, call_id, chat_id, msg_id):
         cord = sqlite3.connect('images.db')
         cursorr = cord.cursor()
         cursorr.execute(f"SELECT unixHour FROM year{datetime.datetime.now().year}_month{self.monthly}_day{self.day} WHERE hour = ?", (hour,))
         unix = cursorr.fetchone()[0]
-        cursorr.execute(f"SELECT Parody, Characters, Artist, file_url, source_url FROM Images WHERE DanbooruID = ?", (self.dbID,))
+        cursorr.execute(f"SELECT post_text, file_url, source_url FROM Images WHERE DanbooruID = ?", (self.dbID,))
         image = cursorr.fetchall()
-        message = image[0][1] + "\n#Arknights" + "\n\n" + f"by {image[0][2]}"
+        message = image[0][0]
         print(message)
         try:
+            print("Аттачу")
             attachments = []
-            image = self.session.get(image[0][3], stream=True)
-            print("imagePass")
+            image = self.session.get(image[0][1], stream=True)
             photo = self.upload.photo_wall(photos=image.raw)[0]
-            print("PhotoPass")
             attachments.append(f"photo{photo['owner_id']}_{photo['id']}")
-            print("Attachments pass")
+            print("Зааттачил")
             self.vk.wall.post(owner_id=-195726793, from_group=1, attachment=','.join(attachments), publish_date=unix, message=message)
-            print("Post Pass")
             cursorr.execute(f"UPDATE year{datetime.datetime.now().year}_month{self.monthly}_day{self.day} SET danbooruID = ? WHERE hour = ?", (self.dbID, hour))
             self.teleBot.answer_callback_query(call_id, "Пост успешно отложен.")
+            teleClient.edit_message_reply_markup(chat_id, msg_id, reply_markup=bot.final(hour))
             print(image)
         except Exception as e:
-            self.teleBot.answer_callback_query(call_id, "Не удалось отложить пост.")
-            print(f"{e}")
+            self.teleBot.answer_callback_query(call_id, f"Не удалось отложить пост: {e}")
+            print(e)
         cord.commit()
         cord.close()
 
+    def final(self, hour):
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(f"Пост отложен на {self.day}.{self.monthly}.{datetime.datetime.now().year} на {hour} часов.", callback_data = "nonData"))
+        return markup
 
-bot = teleBot(teleClient, danbooruClient, session, vk, upload, longpoll, chat_id)
+bot = teleBot(teleClient, danbooruClient, session, vk, upload, chat_id)
 bot.start()
 
 @teleClient.callback_query_handler(func=lambda call: True)
@@ -301,7 +301,7 @@ def callback_query(call):
         teleClient.edit_message_reply_markup(call.message.chat.id, call.message.id, reply_markup=bot.calendar_execute_day(day))
     elif "hour" in call.data:
         hour = call.data.replace("hour_", "")
-        bot.vk_posting(hour, call.id)
+        bot.vk_posting(hour, call.id, call.message.chat.id, call.message.id)
     elif "close" in call.data:
         teleClient.answer_callback_query(call.id, "На эту дату уже запланирован пост.")
 
