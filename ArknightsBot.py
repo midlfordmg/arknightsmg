@@ -12,7 +12,7 @@ import vk_api
 import threading
 import sqlite3
 
-vk_session = vk_api.VkApi(token="vk1.a.F-uilw10Dj0LbR_C6inBDnob8qmkxFuUhwj6YDgaalret1TJMFO7cfpvr0c5p-ul_HuHbSebHRvMcbriflOdqwaQ5u5Wqx467bRJaqzS7jUIf9N13VAsVIZMwIrJv-cshjc8lcaGV4zA71_DdCYBHodHIY6RAx8LocNFvsqrEFiIcHgcMzQLRvvgDV0F2TByjYFSiDn65RapW6-gHuzNmw")
+vk_session = vk_api.VkApi(token="vk1.a.EL3L1hE2V-rHHnQX1lXYsa1yjLgV08OuyAwnybzkw4yqg53LAvB8DkFAYpHNz_LMtKMrx2YRi_neoxI8YxkMea6FHZFQYrJf3nMAlehUBE9px0HdkI3g9OwVGdmDDlBIEHVyS3_HgbXw9XRvZaywEanzBeZwLDGyFELSWwhHlqF9kzuzdmvx36uotnl-pF-HqsyNy8OYdwIbL4JVT8VFHw")
 danbooruClient = Danbooru("danbooru", username="NVKalashnikov", api_key="1nafoWw9jkWrJrNZpF6F1v2B")
 session = requests.Session()
 upload = VkUpload(vk_session)
