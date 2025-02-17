@@ -96,24 +96,20 @@ class teleBot:
             source_url, danbooruID, artist = _img['source'], _img['id'], _img['tag_string_artist']
             characters = self.format_characters(_img['tag_string_character'])
             print("tag konstrukt pass")
-            message = characters + "#Arknights" + "\n\n" + f"by {artist}"
+            message = characters + "\n" + "#Arknights" + "\n\n" + f"by {artist}"
+            file_ext = _img['file_ext']
             print(file_url)
-            # if file_url[-3:] == "png":
-            #     print("Это png.")
-            #     self.teleBot.send_document(chat_id = self.chat, document = file_url, caption = message, reply_markup=self.gen_markup(danbooruID))
-            # elif file_url[-3:] == "jpg":
-            #     print("Это jpg.")
             print(_img)
             if _img['file_size'] > 5000000:
                 print("Это очень большое изображение.")
                 try:
-                    self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message + "\n\n" + source_url, reply_markup=self.gen_markup(danbooruID))
-                    self.save_image_data(danbooruID, message, _img['large_file_url'], source_url)
+                    self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message + "\n\n" + source_url + "\n\n" + file_ext, reply_markup=self.gen_markup(danbooruID))
+                    self.save_image_data(danbooruID, message, file_url, source_url)
                 except Exception as e:
                     print(f"{e}")
             else:
                 try:
-                    self.teleBot.send_photo(self.chat, file_url, caption = message + "\n\n" + source_url, reply_markup=self.gen_markup(danbooruID))
+                    self.teleBot.send_photo(self.chat, file_url, caption = message + "\n\n" + source_url + "\n\n" + file_ext, reply_markup=self.gen_markup(danbooruID))
                     self.save_image_data(danbooruID, message, file_url, source_url)
                 except Exception as e:
                     print(f"{e}")
