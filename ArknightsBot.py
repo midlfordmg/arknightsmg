@@ -99,7 +99,7 @@ class teleBot:
             message = characters + "\n" + "#Arknights" + "\n\n" + f"by {artist}"
             file_ext = _img['file_ext']
             print(file_url)
-            file_size = _img['file_size'] / 1024 / 1024
+            file_size = _img['file_size'] / 1000 / 1024
             print(_img)
             if _img['file_size'] > 5000000:
                 print("Это очень большое изображение.")
