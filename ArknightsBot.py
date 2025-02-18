@@ -67,17 +67,20 @@ class teleBot:
 
 
     def danbooruPars(self):
-        print("Parsing")
-        post = self.danbooru.post_list(limit=1, page=1, tags="arknights")
-        for _id in post:
-            if _id['id'] == self.lastid:
-                print("Oldpost return")
-                return
-            else:
-                self.lastid = _id['id']
-                print(self.lastid)
-        print("Getting a post")
-        self.danbooruGrab(post)
+        try:
+            print("Parsing")
+            post = self.danbooru.post_list(limit=1, page=1, tags="arknights")
+            for _id in post:
+                if _id['id'] == self.lastid:
+                    print("Oldpost return")
+                    return
+                else:
+                    self.lastid = _id['id']
+                    print(self.lastid)
+            print("Getting a post")
+            self.danbooruGrab(post)
+        except Exception as e:
+            print(e)
 
 
     def danbooruGrab(self, post):
