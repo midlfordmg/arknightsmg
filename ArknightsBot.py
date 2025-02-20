@@ -261,7 +261,7 @@ class teleBot:
             photo = self.upload.photo_wall(photos=image.raw)[0]
             attachments.append(f"photo{photo['owner_id']}_{photo['id']}")
             print("Зааттачил")
-            self.vk.wall.post(owner_id=-195726793, from_group=1, attachment=','.join(attachments), publish_date=unix, message=message)
+            self.vk.wall.post(owner_id=-195726793, from_group=1, attachment=','.join(attachments), publish_date=unix + 70, message=message)
             cursorr.execute(f"UPDATE year{datetime.datetime.now().year}_month{self.monthly}_day{self.day} SET danbooruID = ? WHERE hour = ?", (self.dbID, hour))
             self.teleBot.answer_callback_query(call_id, "Пост успешно отложен.")
             teleClient.edit_message_reply_markup(chat_id, msg_id, reply_markup=bot.final(hour))
