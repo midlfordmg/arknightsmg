@@ -68,16 +68,13 @@ class teleBot:
 
     def danbooruPars(self):
         try:
-            print("Parsing")
             post = self.danbooru.post_list(limit=1, page=1, tags="arknights")
             for _id in post:
                 if _id['id'] == self.lastid:
-                    print("Oldpost return")
                     return
                 else:
                     self.lastid = _id['id']
                     print(self.lastid)
-            print("Getting a post")
             self.danbooruGrab(post)
         except Exception as e:
             print(e)
@@ -90,7 +87,6 @@ class teleBot:
                 if check == "sex" or check == "nude" or check == "nipples" or check == "penis" or check == "pussy" or check == "futanari" or check == "cum": #если в тегах найденного арта есть хотя-бы один из тегов в этой проверке, то ищется новый арт (некий блеклист тегов)
                     print("BlackList return")
                     return
-            print("tags check pass")
             try:
                 file_url = _img['file_url']
             except KeyError:
@@ -98,14 +94,10 @@ class teleBot:
                 return
             source_url, danbooruID, artist = _img['source'], _img['id'], _img['tag_string_artist']
             characters = self.format_characters(_img['tag_string_character'])
-            print("tag konstrukt pass")
             message = characters + "\n" + "#Arknights" + "\n\n" + f"by {artist}"
             file_ext = _img['file_ext']
-            print(file_url)
             file_size = _img['file_size'] / 1000 / 1024
-            print(_img)
             if _img['file_size'] > 5000000:
-                print("Это очень большое изображение.")
                 try:
                     self.teleBot.send_photo(self.chat, _img['large_file_url'], caption = message + "\n\n" + source_url + "\n\n" + file_ext + f" {file_size} Mb", reply_markup=self.gen_markup(danbooruID))
                     self.save_image_data(danbooruID, message, file_url, source_url)
