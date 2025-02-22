@@ -274,10 +274,9 @@ bot.start()
 
 @teleClient.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    print(call.message.chat.id)
-    print(call.message.id)
     if "publicate" in call.data:
         danbooruID = call.data.replace("publicate_", "")
+        print(danbooruID)
         teleClient.edit_message_reply_markup(call.message.chat.id, call.message.id, reply_markup=bot.gen_markup_edit(danbooruID))
     elif "delete" in call.data:
         try:
