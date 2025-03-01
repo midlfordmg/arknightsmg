@@ -217,6 +217,8 @@ class teleBot:
         return markup
     
     def calendar_execute_day(self, day):
+        if len(str(day)) == 1:
+            day = "0" + str(day)
         self.day = day
         now = datetime.datetime.now()
         year = now.year
