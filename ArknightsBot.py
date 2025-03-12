@@ -95,6 +95,7 @@ class teleBot:
             source_url, danbooruID, artist = _img['source'], _img['id'], _img['tag_string_artist']
             characters = self.format_characters(_img['tag_string_character'])
             message = characters + "\n" + "#Arknights" + "\n\n" + f"by {artist}"
+            message = message.replace("_(", " (")
             file_ext = _img['file_ext']
             file_size = _img['file_size'] / 1000 / 1024
             if _img['file_size'] > 5000000:
